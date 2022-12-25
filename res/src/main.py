@@ -18,11 +18,14 @@ SCREEN_HEIGHT=800
 SCREEN_WIDTH=600
 
 size= (SCREEN_HEIGHT,SCREEN_WIDTH)
+pygame.mixer.init()
 pygame.init()
 font=pygame.font.SysFont(r"res\font\JMH Typewriter.ttf",50)
 screen =pygame.display.set_mode(size)
+pygame.display.set_caption("PONG!")
 background=pygame.image.load(r"res\img\rect.png")
 background=pygame.transform.scale(background,size)
+sound_on=True
 
 screen.blit(background,(0,0))
 
@@ -115,6 +118,16 @@ def win( a, b):
     #pygame.time.wait(1000)        
     pygame.display.flip()
     pygame.time.wait(2000)
+def sound_check():
+    global sound_on
+    if sound_on==True:
+        sound=pygame.image.load(r"res/img/sound.png")
+        sound=pygame.transform.scale(sound,(50,50))
+    if sound_on== False:
+        sound=pygame.image.load(r"res/img/mute.png")
+        sound=pygame.transform.scale(sound,(50,50))
+    #sound_rect=sound.get_rect(center=(600,400))
+    return sound          
 def play():
     player1=Player1()
     player2=Player2()
@@ -123,8 +136,11 @@ def play():
     all_sprites.add(player1)
     all_sprites.add(player2)
     all_sprites.add(ball)
-    scoreA=9
+    scoreA=0
     scoreB=0
+    global sound_on
+    collison_sound=pygame.mixer.Sound(r"res/sound/hit.mp3")
+
     while True:
         
         screen.fill((0,0,0))
@@ -165,6 +181,8 @@ def play():
         if(ball.rect.y>=560 or ball.rect.y <=0):
                  ball.velocity[1]*=-1 
         if pygame.sprite.collide_rect(player1,ball) or pygame.sprite.collide_rect(ball,player2):
+             if sound_on:
+                collison_sound.play()
              ball.bounce()
              #font = pygame.font.Font(None,74)
              #text=font.render("BOUNCE",1,"white")
@@ -184,22 +202,27 @@ def play():
            menu()
             
         pygame.display.flip()
-        frame.tick(30)
+        frame.tick(60)
 
 def menu():
     screen.fill("black")
     running =True
+    global sound_on
+    if sound_on:
+            background_sound=pygame.mixer.Sound(r"res/sound/background.mp3")
+            background_sound.play(loops=-1)
     while running:
-
+       
+        
         MENU_MOUSE_POS=pygame.mouse.get_pos()
         MENU_TEXT=font.render("MAIN MENU",True,(255,255,255))
         MENU_RECT=MENU_TEXT.get_rect(center=(400,100))
         screen.blit(MENU_TEXT,MENU_RECT)
-    
+        
         PLAY_BUTTON=Button(image=pygame.image.load(r"res\img\rect.png"), pos=(400,200),text_input="PLAY",font=font,base_colour="red",hovering_colour="green")
         QUIT_BUTTON=Button(image=pygame.image.load(r"res\img\rect.png"), pos=(400,400),text_input="QUIT",font=font,base_colour="red",hovering_colour="green")
-        
-        for button in [PLAY_BUTTON,QUIT_BUTTON]:
+        SOUND_BUTTON=Button(image=sound_check(),pos=(700,500),font=font,text_input="",base_colour="white",hovering_colour="white")
+        for button in [PLAY_BUTTON,QUIT_BUTTON,SOUND_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(screen)
 
@@ -210,10 +233,22 @@ def menu():
 
             if event.type==pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    background_sound.stop()
                     play()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     sys.exit()    
-
+                if SOUND_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    black_image=pygame.image.load(r"res/img/black.png")
+                    black_image=pygame.transform.scale(black_image,(50,50))
+                    screen.blit(black_image,SOUND_BUTTON.rect)
+                    if sound_on:
+                        background_sound.stop()
+                        sound_on=False
+                    else:
+                        background_sound.play()
+                        sound_on=True
+                    #print(sound_on)
+                    
         pygame.display.flip()
         frame.tick(60)
 
