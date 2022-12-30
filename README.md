@@ -1,5 +1,9 @@
 # PONG
 Simple Pong Game!
+TUTORIAL-
+PLAYER 1- w for up , s for Down
+PLAYER 2 - UPARROW for up , DOWNARROW for Down
+          
 
 Instruction For Installation:
 
